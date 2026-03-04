@@ -1,0 +1,1 @@
+CREATE TABLE [dbo].[FileLoadLog](	  [FileLoadLogID] INT NOT NULL IDENTITY(1,1)	, [FileID] INT NOT NULL	, [SourceFile] VARCHAR(255) COLLATE SQL_Latin1_General_CP1_CI_AS NOT NULL	, [DestinationFile] VARCHAR(255) COLLATE SQL_Latin1_General_CP1_CI_AS NULL	, [LoadDate] DATETIME NOT NULL DEFAULT(getdate())	, CONSTRAINT [PK_FileLoadLog] PRIMARY KEY ([FileLoadLogID] ASC))

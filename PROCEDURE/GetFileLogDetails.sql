@@ -1,0 +1,19 @@
+CREATE PROCEDURE [dbo].[GetFileLogDetails]
+(
+	--@AdvJobNo VARCHAR(50)
+	@FileID VARCHAR(100)
+)
+AS
+
+SET NOCOUNT ON;
+
+----TESTING
+--DECLARE @AdvJobNo VARCHAR(50)
+--SET @AdvJobNo = '91090'
+
+SELECT TOP 1 *
+FROM FileLog
+WHERE FileID=@FileID
+	AND FileType='ORIGINAL'
+ORDER BY CreatedDate DESC
+

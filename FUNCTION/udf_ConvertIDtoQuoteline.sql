@@ -1,0 +1,7 @@
+
+CREATE FUNCTION [dbo].[udf_ConvertIDtoQuoteline] (@id VARCHAR(MAX))
+RETURNS VARCHAR(10) AS
+BEGIN
+    RETURN  'QL-'+RIGHT('0000000'+CAST(@id AS VARCHAR(20)),7)
+END
+

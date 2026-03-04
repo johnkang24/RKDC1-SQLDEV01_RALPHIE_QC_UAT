@@ -1,0 +1,1 @@
+CREATE TABLE [dbo].[StateCode](	  [State] NVARCHAR(50) COLLATE SQL_Latin1_General_CP1_CI_AS NOT NULL	, [Code] NVARCHAR(50) COLLATE SQL_Latin1_General_CP1_CI_AS NOT NULL)
