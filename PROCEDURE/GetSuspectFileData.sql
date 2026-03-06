@@ -92,6 +92,8 @@ SELECT 'scanline',
     max(scanline1)
 FROM [dbo].[ORIGINAL]
 WHERE parent_id = @parent_id --AND child_id IS NULL
+	--JCK:03.05.2026 - exclude seed
+	AND IsSeed<>1
 UNION ALL
 -- child: scanline
 SELECT check_name, status
@@ -101,6 +103,8 @@ FROM (
 		max(scanline1) status
 	FROM [dbo].[ORIGINAL]
 	WHERE parent_id = @parent_id AND child_id IS NOT NULL
+		--JCK:03.05.2026 - exclude seed
+		AND IsSeed<>1
 	GROUP BY child_id
 	) A
 
@@ -119,6 +123,8 @@ SELECT 'bc2d1',
     max(bc2d1)
 FROM [dbo].[ORIGINAL]
 WHERE parent_id = @parent_id AND child_id IS NULL
+	--JCK:03.05.2026 - exclude seed
+	AND IsSeed<>1
 UNION ALL
 -- child: bc2d1
 SELECT check_name, status
@@ -128,6 +134,8 @@ FROM (
 		max(bc2d1) status
 	FROM [dbo].[ORIGINAL]
 	WHERE parent_id = @parent_id AND child_id IS NOT NULL
+		--JCK:03.05.2026 - exclude seed
+		AND IsSeed<>1
 	GROUP BY child_id
 	) A
 
@@ -140,6 +148,8 @@ FROM [dbo].[ORIGINAL]
 WHERE parent_id = @parent_id 
 	AND COALESCE(bc2d2,'')<>''
 	AND child_id IS NULL
+	--JCK:03.05.2026 - exclude seed
+	AND IsSeed<>1
 UNION ALL
 -- child: bc2d2
 SELECT check_name, status
@@ -151,6 +161,8 @@ FROM (
 	WHERE parent_id = @parent_id 
 		AND COALESCE(bc2d2,'')<>''
 		AND child_id IS NOT NULL
+		--JCK:03.05.2026 - exclude seed
+		AND IsSeed<>1
 	GROUP BY child_id
 	) A
 
@@ -164,6 +176,8 @@ FROM [dbo].[ORIGINAL]
 WHERE parent_id = @parent_id 
 	AND COALESCE(bc3of9,'')<>''
 	AND child_id IS NULL
+	--JCK:03.05.2026 - exclude seed
+	AND IsSeed<>1
 UNION ALL
 -- child: bc3of9
 SELECT check_name, status
@@ -175,6 +189,8 @@ FROM (
 	WHERE parent_id = @parent_id 
 		AND COALESCE(bc3of9,'')<>''
 		AND child_id IS NOT NULL
+		--JCK:03.05.2026 - exclude seed
+		AND IsSeed<>1
 	GROUP BY child_id
 	) A
 
