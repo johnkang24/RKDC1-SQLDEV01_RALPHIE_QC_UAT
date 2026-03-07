@@ -1,4 +1,4 @@
-CREATE PROCEDURE [dbo].[RefreshAskArrayByFile]
+CREATE PROCEDURE [dbo].[RefreshAskArrayByFile_V2B]
 (
 	@file_id INT,
 	@giftType INT = 0,
@@ -11,7 +11,7 @@ DECLARE @testing BIT=0
 
 --TESTING!
 --DECLARE @file_id INT,@giftType INT = 0, @status BIT=0, @partial bit=0
---SET @file_id = 74
+--SET @file_id = 72
 --SET @giftType =1
 --SET @status = 0
 --SET @testing = 1
@@ -101,31 +101,6 @@ BEGIN
 	INSERT #tmpDeliverables
 	EXEC (@OPENQUERY+@TSQL)
 
-	--STEP 4: get deliverable-level ask table codes from COMS
-	IF OBJECT_ID('tempdb..#tmpSpecialCodes') IS NOT NULL
-		DROP TABLE #tmpSpecialCodes
-
-	CREATE TABLE #tmpSpecialCodes
-	(
-		LineID VARCHAR(255),
-		SB_Ask_Array_Code__c VARCHAR(255),
-		SpecialCodes VARCHAR(MAX),
-	)
-	
-	INSERT #tmpSpecialCodes
-	SELECT A.LineID, A.SB_Ask_Array_Code__c, STRING_AGG(AO.SpecialCode,',') SpecialCodes
-	FROM #tmpDeliverables A
-		JOIN AskArray.dbo.AskTable AT ON AT.AsktableCode=A.SB_Ask_Array_Code__c
-		JOIN AskArray.dbo.AskOptions AO ON AO.AskTableId=AT.AskTableId AND AO.SpecialCode IS NOT NULL
-	GROUP BY A.LineID, A.SB_Ask_Array_Code__c
-
-	IF @testing=1 BEGIN
-		SELECT * FROM #tmpDeliverables
-		SELECT * FROM #tmpSpecialCodes
-	END
-
-
-	--STEP 5: get deliverable-level ask table codes from COMS
 	SET @askrunid = @client_code+'_'+CAST(@file_id AS VARCHAR(10))+'_'+FORMAT(GETDATE(), 'yyyy-MM-dd_HH_mm_ss')
 	--SET @askrunid = 'MWKWI_72_2026-03-02_13_03_15'
 
@@ -157,30 +132,23 @@ BEGIN
 	--      ,[ltramt]
 	--      ,[misc7]
 	--		,giftdate
-		  --,CASE WHEN LEFT(rm,1)='U' THEN 999 ELSE datediff(month, CAST(giftdate AS DATE), @fb0_GridDate)-
-		  ,CASE WHEN giftdate IS NULL THEN NULL ELSE datediff(month, CAST(giftdate AS DATE), @fb0_GridDate)-
-				CASE WHEN DATEPART(day, CAST(giftdate AS DATE)) > DATEPART(day, @fb0_GridDate) THEN 1 ELSE 0 END 
-		  END recency
-		  --,CASE WHEN LEFT(rm,1)='U' THEN 0 
-		  ,CASE WHEN LEN(COALESCE(misc7,''))<2 THEN NULL
-			ELSE CASE WHEN @Vertical='Missions' AND CAST([last_giftamt] AS MONEY) > 0 AND SUBSTRING(misc7,2,1)='0' THEN 1 ELSE SUBSTRING(misc7,2,1) END
-		  END frequency
-		  ,CASE WHEN @Vertical='Missions' THEN 
-			CASE WHEN CAST([last_giftamt] AS MONEY) < 0 THEN 0.01 ELSE ROUND(CAST([last_giftamt] AS MONEY),2) END
-			ELSE ROUND(CAST([giftamt] AS MONEY),2) 
-		  END monetary
+		  ,CASE WHEN LEFT(rm,1)='U' THEN 999 ELSE datediff(month, CAST(giftdate AS DATE), @fb0_GridDate)-
+					CASE WHEN DATEPART(day, CAST(giftdate AS DATE)) > DATEPART(day, @fb0_GridDate) THEN 1 ELSE 0 END END recency
+		  ,CASE WHEN LEFT(rm,1)='U' THEN 0 ELSE SUBSTRING(misc7,2,1) END frequency
+		  --,ROUND([giftamt],2) monetary
+		  --,CASE WHEN @giftType=1 THEN ROUND([last_giftamt],2) ELSE ROUND([giftamt],2) END monetary
+		  ,CASE WHEN @Vertical='Missions' THEN ROUND([last_giftamt],2) ELSE ROUND([giftamt],2) END monetary
 		  ,Multiplier
-		  ,CASE WHEN CHARINDEX([rm],COALESCE(S.SpecialCodes,''))>0 THEN [rm] ELSE dbo.[udf_TransformRM]([rm]) END rm
+		  ,[rm]
 	FROM [ORIGINAL] A JOIN ProcessLog B ON B.Parent_ID=A.parent_id
 		JOIN #tmpDeliverables C ON C.LineID=CASE WHEN COALESCE(A.child_id,'')='' THEN A.parent_id ELSE A.child_id END
-		LEFT JOIN #tmpSpecialCodes S ON S.LineID=CASE WHEN COALESCE(A.child_id,'')='' THEN A.parent_id ELSE A.child_id END
 	WHERE A.FileID=@file_id
 		AND AskOptionID IS NULL
 		--JCK:12.04.2025 - skip when RKDOPEN table is set
 		AND C.SB_Ask_Array_Code__c<>'RKDOPEN'
 	ORDER BY rm
 
-	--STEP 6: call the SP to generate the new ask values
+	--STEP 4: call the SP to generate the new ask values
 	EXECUTE AskArray.dbo.ExecuteAskRuntime @askrunid
 
 	DECLARE @error_total INT
@@ -218,7 +186,7 @@ BEGIN
 	UPDATE FileLog SET AskRunID=@askrunid
 	WHERE FileID=@file_id
 
-	--STEP 7: if no errors
+	--STEP 5: if no errors
 	IF @error_total=0 BEGIN
 		UPDATE ProcessLog SET AskArray_Processed=1
 		WHERE FileID=@file_id
@@ -230,10 +198,10 @@ BEGIN
 		JOIN (SELECT A.parent_ID
 		FROM ORIGINAL A 
 			JOIN AskArray.dbo.AskRuntime B ON B.Id=A.Original_ID AND B.AskRunId=@askrunid
-		WHERE A.FileID=@file_id
+		WHERE A.FileID=70
 			AND B.AskOptionID IS NULL
 		GROUP BY A.parent_ID) A ON A.parent_id=P.Parent_ID
-		WHERE P.FileID=@file_id
+		WHERE P.FileID=70
 	END
 END
 
