@@ -100,6 +100,7 @@ IF @ResetSeeds=1 BEGIN
 			Serial NVARCHAR(100),
 		);
 
+		--JCK:03.09.2026 added SB_Contact__r.Is_Inactive__c=false to filter out inactive contacts too
 		SET @SQL = '
 			SELECT *, NULL Serial
 			FROM OPENQUERY([' + @LinkedServer + '], 
@@ -107,7 +108,7 @@ IF @ResetSeeds=1 BEGIN
 				SB_Contact__r.FirstName, SB_Contact__r.MiddleName, SB_Contact__r.LastName, SB_Contact__r.Suffix, SB_Contact__r.Title, SB_Contact__r.Email, 
 				SB_Contact__r.HasOptedOutOfEmail, SB_Contact__r.Phone, SB_Contact__r.MailingStreet, SB_Contact__r.MailingCity, SB_Contact__r.MailingState, SB_Contact__r.MailingPostalCode, SB_Contact__r.MailingCountry, SB_Contact__r.Contact_type__c 
 				FROM Seed__c
-				WHERE SB_Active__c = true AND (SB_VERTICAL__c = ''''' + REPLACE(@VERTICAL, '''', '''''') + ''''' OR SB_Account__c = ''''' + REPLACE(@ACC_ID, '''', '''''') + ''''')'')';
+				WHERE SB_Active__c = true AND SB_Contact__r.Is_Inactive__c=false (SB_VERTICAL__c = ''''' + REPLACE(@VERTICAL, '''', '''''') + ''''' OR SB_Account__c = ''''' + REPLACE(@ACC_ID, '''', '''''') + ''''')'')';
 
 
 		INSERT INTO #SeedObj EXEC(@SQL);

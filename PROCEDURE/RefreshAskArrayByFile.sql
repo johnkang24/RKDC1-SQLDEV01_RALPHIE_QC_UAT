@@ -166,7 +166,7 @@ BEGIN
 			ELSE CASE WHEN @Vertical='Missions' AND CAST([last_giftamt] AS MONEY) > 0 AND SUBSTRING(misc7,2,1)='0' THEN 1 ELSE SUBSTRING(misc7,2,1) END
 		  END frequency
 		  ,CASE WHEN @Vertical='Missions' THEN 
-			CASE WHEN CAST([last_giftamt] AS MONEY) < 0 THEN 0.01 ELSE ROUND(CAST([last_giftamt] AS MONEY),2) END
+			CASE WHEN CAST([last_giftamt] AS MONEY) < 0 THEN 0.00 ELSE ROUND(CAST([last_giftamt] AS MONEY),2) END
 			ELSE ROUND(CAST([giftamt] AS MONEY),2) 
 		  END monetary
 		  ,Multiplier
