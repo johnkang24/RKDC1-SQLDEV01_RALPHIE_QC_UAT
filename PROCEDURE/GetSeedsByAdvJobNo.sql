@@ -12,9 +12,9 @@ DECLARE @testing BIT = 0
 SET NOCOUNT ON;
 	
 --TESTING
---DECLARE @AdvJobNo VARCHAR(50), @DelivrableId VARCHAR(50), @ResetSeeds BIT, @testing BIT
---SET @AdvJobNo = '98714'
---SET @DelivrableId = '144065'	--50963 50957
+--DECLARE @AdvJobNo VARCHAR(50), @DelivrableId VARCHAR(50), @ResetSeeds BIT
+--SET @AdvJobNo = '98871'
+--SET @DelivrableId = '158776'	--50963 50957
 --SET @ResetSeeds = 1
 --SET @testing = 0
 
@@ -108,7 +108,7 @@ IF @ResetSeeds=1 BEGIN
 				SB_Contact__r.FirstName, SB_Contact__r.MiddleName, SB_Contact__r.LastName, SB_Contact__r.Suffix, SB_Contact__r.Title, SB_Contact__r.Email, 
 				SB_Contact__r.HasOptedOutOfEmail, SB_Contact__r.Phone, SB_Contact__r.MailingStreet, SB_Contact__r.MailingCity, SB_Contact__r.MailingState, SB_Contact__r.MailingPostalCode, SB_Contact__r.MailingCountry, SB_Contact__r.Contact_type__c 
 				FROM Seed__c
-				WHERE SB_Active__c = true AND SB_Contact__r.Is_Inactive__c=false (SB_VERTICAL__c = ''''' + REPLACE(@VERTICAL, '''', '''''') + ''''' OR SB_Account__c = ''''' + REPLACE(@ACC_ID, '''', '''''') + ''''')'')';
+				WHERE SB_Active__c = true AND SB_Contact__r.Is_Inactive__c=false AND (SB_VERTICAL__c = ''''' + REPLACE(@VERTICAL, '''', '''''') + ''''' OR SB_Account__c = ''''' + REPLACE(@ACC_ID, '''', '''''') + ''''')'')';
 
 
 		INSERT INTO #SeedObj EXEC(@SQL);
