@@ -3,7 +3,8 @@ CREATE PROCEDURE [dbo].[GetSeedsByAdvJobNo]
 (
 	@AdvJobNo VARCHAR(50),
 	@DelivrableId VARCHAR(50),
-	@ResetSeeds BIT = 1
+	@ResetSeeds BIT = 1,
+	@RefreshAskArray BIT = 1	--JCK:03.11.2026 -- adding new optional param to not perform ask array update (if this will be called later from MFB after the seed loads)
 )
 AS
 
@@ -12,9 +13,9 @@ DECLARE @testing BIT = 0
 SET NOCOUNT ON;
 	
 --TESTING
---DECLARE @AdvJobNo VARCHAR(50), @DelivrableId VARCHAR(50), @ResetSeeds BIT
---SET @AdvJobNo = '98871'
---SET @DelivrableId = '158776'	--50963 50957
+--DECLARE @AdvJobNo VARCHAR(50), @DelivrableId VARCHAR(50), @ResetSeeds BIT, @RefreshAskArray BIT = 0
+--SET @AdvJobNo = '98884'
+--SET @DelivrableId = '158945'	--50963 50957
 --SET @ResetSeeds = 1
 --SET @testing = 0
 
@@ -152,8 +153,12 @@ IF @ResetSeeds=1 BEGIN
 				--	ELSE acr.SB_Last_Pseudonym__c 
 				--END,
 				LastName,
-				Suffix, Email, Phone, MailingStreet, NULL, MailingCity, MailingState, MailingPostalCode, NULL, NULL, NULL, NULL, NULL, NULL, COALESCE(acr.SB_RM_Code__c,'UU'), NULL, @DelivrableId, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, @appeal1, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, Serial, 1
-			FROM #SeedObj acr 
+				acr.Suffix, acr.Email, acr.Phone, MailingStreet, NULL, MailingCity, MailingState, MailingPostalCode, NULL, NULL, NULL, NULL, NULL, NULL, COALESCE(acr.SB_RM_Code__c,'UU'), NULL, @DelivrableId, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, @appeal1, NULL, NULL
+					, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL	--scanline, bc2d1, bc3of9
+					, B.misc1, B.misc2, B.misc3, B.misc4, B.misc5, B.misc6, B.misc7, B.misc8, B.misc9	--misc1-9
+					, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, acr.Serial, 1
+			FROM #SeedObj acr
+				JOIN (SELECT TOP 1 * FROM ORIGINAL WHERE FileID=@FILE_ID AND parent_id=@DelivrableId AND IsSeed=0 AND COALESCE(child_id,'')='' ORDER BY id) B ON B.FileID=@FILE_ID
 			--WHERE AccountId = @ACC_ID;
 
 			SELECT o.id, @FILE_ID, o.Original_ID, Contact_type__c, acr.SB_Seed_Type__c, acr.SB_Seed_List__c, acr.SB_Replicate__c, MailingCountry, HasOptedOutOfEmail, 1
@@ -167,7 +172,10 @@ IF @ResetSeeds=1 BEGIN
 
 			-- Insert into dbo.ORIGINAL table
 			INSERT INTO dbo.ORIGINAL(
-				[FileID], [client_code], [id], [salutation], [company], [addressee1], [addressee2], [gender], [title], [fname], [middle], [lname], [suffix], [email], [phone], [address1], [address2], [city], [state], [zip], [giftdate], [giftamt], [i_giftdate], [totalamt], [memgifamt], [memgifdat], [rm], [list], [parent_id], [child_id], [PLSR_Code], [CLSR_Code], [mailtype], [mailmnth], [mailpkg], [ltramt], [ug1], [lg], [ug2], [ug3], [ug4], [m1], [mg], [m2], [m3], [m4], [appeal1], [appeal2], [appeal3], [scanline1], [scanline2], [scanline3], [bc2d1], [bc2d2], [bc2d3], [bc2d4], [bc2d5], [bc2d6], [bc3of9], [misc1], [misc2], [misc3], [misc4], [misc5], [misc6], [misc7], [misc8], [misc9], [county], [stitle], [sfname], [smiddle], [slname], [ssuffix], [importid], [solcode1], [solcode2], [solcode3], [multi_flg], [filetype], [endorsement], [ws], [cr_sequence], [cr_id], [income], [dupedrop], [serial], [IsSeed]
+				[FileID], [client_code], [id], [salutation], [company], [addressee1], [addressee2], [gender], [title], [fname], [middle], [lname], [suffix], [email], [phone], [address1], [address2], [city], [state], [zip], [giftdate], [giftamt], [i_giftdate], [totalamt], [memgifamt], [memgifdat], [rm], [list], [parent_id], [child_id], [PLSR_Code], [CLSR_Code], [mailtype], [mailmnth], [mailpkg], [ltramt], [ug1], [lg], [ug2], [ug3], [ug4], [m1], [mg], [m2], [m3], [m4], [appeal1], [appeal2], [appeal3]
+					, [scanline1], [scanline2], [scanline3], [bc2d1], [bc2d2], [bc2d3], [bc2d4], [bc2d5], [bc2d6], [bc3of9]
+					, [misc1], [misc2], [misc3], [misc4], [misc5], [misc6], [misc7], [misc8], [misc9]
+					, [county], [stitle], [sfname], [smiddle], [slname], [ssuffix], [importid], [solcode1], [solcode2], [solcode3], [multi_flg], [filetype], [endorsement], [ws], [cr_sequence], [cr_id], [income], [dupedrop], [serial], [IsSeed]
 			)
 			SELECT
 				--JCK:02.25.2026
@@ -186,14 +194,21 @@ IF @ResetSeeds=1 BEGIN
 				--	ELSE acr.SB_Last_Pseudonym__c 
 				--END,
 				LastName,
-				Suffix, Email, Phone, MailingStreet, NULL, MailingCity, MailingState, MailingPostalCode, NULL, NULL, NULL, NULL, NULL, NULL, COALESCE(acr.SB_RM_Code__c,'UU'), NULL, @DelivrableId, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, @appeal1, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'S_'+CAST(@max_serial+ROW_NUMBER() OVER (ORDER BY acr.SB_Donor_Id__c) AS VARCHAR(1000))+'_'+@DelivrableId, 1
+				acr.Suffix, acr.Email, acr.Phone, MailingStreet, NULL, MailingCity, MailingState, MailingPostalCode, NULL, NULL, NULL, NULL, NULL, NULL, COALESCE(acr.SB_RM_Code__c,'UU'), NULL, @DelivrableId, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, @appeal1, NULL, NULL
+					--, NULL,	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'S_'+CAST(@max_serial+ROW_NUMBER() OVER (ORDER BY acr.SB_Donor_Id__c) AS VARCHAR(1000))+'_'+@DelivrableId, 1
+					, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL	--scanline, bc2d1, bc3of9
+					, B.misc1, B.misc2, B.misc3, B.misc4, B.misc5, B.misc6, B.misc7, B.misc8, B.misc9	--misc1-9
+					, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'S_'+CAST(@max_serial+ROW_NUMBER() OVER (ORDER BY acr.SB_Donor_Id__c) AS VARCHAR(1000))+'_'+@DelivrableId, 1
 			FROM #SeedObj acr 
+				JOIN (SELECT TOP 1 * FROM ORIGINAL WHERE FileID=@FILE_ID AND parent_id=@DelivrableId AND IsSeed=0 AND COALESCE(child_id,'')='' ORDER BY id) B ON B.FileID=@FILE_ID
 			--WHERE AccountId = @ACC_ID;
 
 			--JCK: 11:07.2025 - build scanline for new seeds (or any others with Scanline_Processed=0)
 			EXEC BuildScanline @FILE_ID, 1
 			DECLARE @status BIT
-			EXEC RefreshAskArrayByFile @FILE_ID, 0, 1, @status OUTPUT
+			IF @RefreshAskArray=1 BEGIN
+				EXEC RefreshAskArrayByFile @FILE_ID, 0, 1, @status OUTPUT
+			END
 
 			----DELETE s FROM dbo.SeedsSelection s INNER JOIN dbo.ORIGINAL o ON s.AccountId = o.id AND o.parent_id=@DelivrableId;
 			DELETE s FROM dbo.SeedsSelection s INNER JOIN dbo.ORIGINAL o ON s.Original_ID=o.Original_ID AND o.FileID=@FILE_ID AND o.parent_id = @DelivrableId
@@ -225,14 +240,13 @@ END
 IF @testing=1 BEGIN
 	PRINT @FILE_ID
 	PRINT @DelivrableId
+END ELSE BEGIN
+	SELECT *
+	FROM dbo.ORIGINAL o
+	JOIN dbo.SeedsSelection ss ON o.Original_ID = ss.Original_ID
+	--WHERE o.FileID = @FILE_ID AND o.parent_id = @AdvJobNo AND o.child_id = @DelivrableId AND o.IsSeed = 1;
+	WHERE o.FileID = @FILE_ID 
+	AND o.parent_id = @DelivrableId 
+	--AND o.child_id = @DelivrableId 
+	AND o.IsSeed = 1;
 END
-
-SELECT *
-FROM dbo.ORIGINAL o
-JOIN dbo.SeedsSelection ss ON o.Original_ID = ss.Original_ID
---WHERE o.FileID = @FILE_ID AND o.parent_id = @AdvJobNo AND o.child_id = @DelivrableId AND o.IsSeed = 1;
-WHERE o.FileID = @FILE_ID 
-AND o.parent_id = @DelivrableId 
---AND o.child_id = @DelivrableId 
-AND o.IsSeed = 1;
-
