@@ -11,7 +11,7 @@ DECLARE @testing BIT = 0
 
 --TESTING
 --DECLARE @FileID INT
---SET @FileID = 70
+--SET @FileID = 104
 --SET @testing = 1
 
 SET @LinkedServer = 'COMS_UATSB'
@@ -35,23 +35,79 @@ END
 
 IF @testing=1 BEGIN
 	SELECT '@UnapprovedCount', @UnapprovedCount
+
+	SELECT [dbo].udf_ConvertIDtoQuoteline(A.Parent_ID) QuoteLineID, COUNT(*)
+	FROM ORIGINAL A JOIN FileLog B ON B.FileID=A.FileID AND B.Advantage_Job_ID=(SELECT Advantage_Job_ID FROM FileLog WHERE FileID=@FileID)
+		JOIN ProcessLog C ON C.FileID=B.FileID AND C.Is_Acquisition=@is_acquisition
+		LEFT JOIN NCOA N ON N.ParentFileID=A.FileID AND N.id=A.id
+	WHERE COALESCE(child_id,'') =''
+		AND (N.dupedrop IS NULL OR N.dupedrop<>'TRUE')
+		AND (N.error_code IS NULL OR N.error_code NOT IN (
+		'-1','111','112','113','114','211','212','213','214','215','216','217','218','219','220',
+		'311','312','313','411','412','413','414','415','416','417','418','419','420','421',
+		'422','423','491','492','493','494'
+		))
+
+	GROUP BY A.Parent_ID
+	UNION ALL
+	--SELECT [dbo].udf_ConvertIDtoQuoteline(Child_ID), COUNT(*)
+	SELECT [dbo].udf_ConvertIDtoQuoteline(Child_ID), COUNT(*) DeliveredQty
+	FROM ORIGINAL A JOIN FileLog B ON B.FileID=A.FileID AND B.Advantage_Job_ID=(SELECT Advantage_Job_ID FROM FileLog WHERE FileID=@FileID)
+		JOIN ProcessLog C ON C.FileID=B.FileID AND C.Is_Acquisition=@is_acquisition
+		LEFT JOIN NCOA N ON N.ParentFileID=A.FileID AND N.id=A.id
+	WHERE COALESCE(child_id,'') >''
+		AND (N.dupedrop IS NULL OR N.dupedrop<>'TRUE')
+		AND (N.error_code IS NULL OR N.error_code NOT IN (
+		'-1','111','112','113','114','211','212','213','214','215','216','217','218','219','220',
+		'311','312','313','411','412','413','414','415','416','417','418','419','420','421',
+		'422','423','491','492','493','494'
+		))
+	GROUP BY Child_ID
 END
 
 --STEP 2: get all delivered qtys by QL
-DECLARE db_cursor CURSOR FOR 
+DECLARE db_cursor CURSOR FOR
+
+--JCK:03.13.2025 - fix pulling delivered qty for each package/phase
 --SELECT [dbo].udf_ConvertIDtoQuoteline(A.Parent_ID) QuoteLineID, COUNT(*) DeliveredQty
-SELECT [dbo].udf_ConvertIDtoQuoteline(A.Parent_ID) QuoteLineID, C.Delivered_Qty
+--SELECT [dbo].udf_ConvertIDtoQuoteline(A.Parent_ID) QuoteLineID, C.Delivered_Qty
+--FROM ORIGINAL A JOIN FileLog B ON B.FileID=A.FileID AND B.Advantage_Job_ID=(SELECT Advantage_Job_ID FROM FileLog WHERE FileID=@FileID)
+--	JOIN ProcessLog C ON C.FileID=B.FileID AND C.Is_Acquisition=@is_acquisition
+--WHERE COALESCE(child_id,'') =''
+--GROUP BY A.Parent_ID, C.Delivered_Qty
+--UNION ALL
+----SELECT [dbo].udf_ConvertIDtoQuoteline(Child_ID), COUNT(*)
+--SELECT [dbo].udf_ConvertIDtoQuoteline(Child_ID), C.Delivered_Qty
+--FROM ORIGINAL A JOIN FileLog B ON B.FileID=A.FileID AND B.Advantage_Job_ID=(SELECT Advantage_Job_ID FROM FileLog WHERE FileID=@FileID)
+--	JOIN ProcessLog C ON C.FileID=B.FileID AND C.Is_Acquisition=@is_acquisition
+--WHERE COALESCE(child_id,'') >''
+--GROUP BY Child_ID, C.Delivered_Qty
+SELECT [dbo].udf_ConvertIDtoQuoteline(A.Parent_ID) QuoteLineID, COUNT(*) DeliveredQty
 FROM ORIGINAL A JOIN FileLog B ON B.FileID=A.FileID AND B.Advantage_Job_ID=(SELECT Advantage_Job_ID FROM FileLog WHERE FileID=@FileID)
 	JOIN ProcessLog C ON C.FileID=B.FileID AND C.Is_Acquisition=@is_acquisition
+	LEFT JOIN NCOA N ON N.ParentFileID=A.FileID AND N.id=A.id
 WHERE COALESCE(child_id,'') =''
-GROUP BY A.Parent_ID, C.Delivered_Qty
+	AND (N.dupedrop IS NULL OR N.dupedrop<>'TRUE')
+	AND (N.error_code IS NULL OR N.error_code NOT IN (
+	'-1','111','112','113','114','211','212','213','214','215','216','217','218','219','220',
+	'311','312','313','411','412','413','414','415','416','417','418','419','420','421',
+	'422','423','491','492','493','494'
+	))
+GROUP BY A.Parent_ID
 UNION ALL
 --SELECT [dbo].udf_ConvertIDtoQuoteline(Child_ID), COUNT(*)
-SELECT [dbo].udf_ConvertIDtoQuoteline(Child_ID), C.Delivered_Qty
+SELECT [dbo].udf_ConvertIDtoQuoteline(Child_ID), COUNT(*) DeliveredQty
 FROM ORIGINAL A JOIN FileLog B ON B.FileID=A.FileID AND B.Advantage_Job_ID=(SELECT Advantage_Job_ID FROM FileLog WHERE FileID=@FileID)
 	JOIN ProcessLog C ON C.FileID=B.FileID AND C.Is_Acquisition=@is_acquisition
+	LEFT JOIN NCOA N ON N.ParentFileID=A.FileID AND N.id=A.id
 WHERE COALESCE(child_id,'') >''
-GROUP BY Child_ID, C.Delivered_Qty
+	AND (N.dupedrop IS NULL OR N.dupedrop<>'TRUE')
+	AND (N.error_code IS NULL OR N.error_code NOT IN (
+	'-1','111','112','113','114','211','212','213','214','215','216','217','218','219','220',
+	'311','312','313','411','412','413','414','415','416','417','418','419','420','421',
+	'422','423','491','492','493','494'
+	))
+GROUP BY Child_ID
 
 OPEN db_cursor  
 FETCH NEXT FROM db_cursor INTO @QuoteName, @DeliveredQty
