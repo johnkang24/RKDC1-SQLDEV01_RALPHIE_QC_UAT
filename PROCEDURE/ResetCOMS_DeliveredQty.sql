@@ -16,15 +16,29 @@ SET @LinkedServer = 'COMS_UATSB'
 --STEP 2: get all delivered qtys by QL
 DECLARE db_cursor CURSOR FOR 
 SELECT [dbo].udf_ConvertIDtoQuoteline(Parent_ID) QuoteLineID, COUNT(*) DeliveredQty
-FROM ORIGINAL
-WHERE FileID=@FileID
-	AND COALESCE(child_id,'') =''
+FROM ORIGINAL A
+	LEFT JOIN NCOA B ON B.ParentFileID=A.FileID AND B.id=A.id
+WHERE A.FileID=@FileID 
+	AND (B.dupedrop IS NULL OR B.dupedrop<>'TRUE')
+	AND ( B.error_code IS NULL OR B.error_code NOT IN (
+	'-1','111','112','113','114','211','212','213','214','215','216','217','218','219','220',
+	'311','312','313','411','412','413','414','415','416','417','418','419','420','421',
+	'422','423','491','492','493','494'
+	))
+	AND COALESCE(A.child_id,'') =''
 GROUP BY Parent_ID
 UNION ALL
 SELECT [dbo].udf_ConvertIDtoQuoteline(Child_ID), COUNT(*)
-FROM ORIGINAL
-WHERE FileID=@FileID
-	AND COALESCE(child_id,'') >''
+FROM ORIGINAL A
+	LEFT JOIN NCOA B ON B.ParentFileID=A.FileID AND B.id=A.id
+WHERE A.FileID=@FileID 
+	AND (B.dupedrop IS NULL OR B.dupedrop<>'TRUE')
+	AND ( B.error_code IS NULL OR B.error_code NOT IN (
+	'-1','111','112','113','114','211','212','213','214','215','216','217','218','219','220',
+	'311','312','313','411','412','413','414','415','416','417','418','419','420','421',
+	'422','423','491','492','493','494'
+	))
+	AND COALESCE(A.child_id,'') >''
 GROUP BY Child_ID
 
 
