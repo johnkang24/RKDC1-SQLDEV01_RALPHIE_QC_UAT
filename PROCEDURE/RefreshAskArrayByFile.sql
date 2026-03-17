@@ -11,10 +11,10 @@ DECLARE @testing BIT=0
 
 --TESTING!
 --DECLARE @file_id INT,@giftType INT = 0, @status BIT=0, @partial bit=0
---SET @file_id = 74
+--SET @file_id = 80
 --SET @giftType =1
 --SET @status = 0
---SET @testing = 1
+--SET @testing = 0
 
 DECLARE @client_code VARCHAR(10), @fb0_GridDate date, @multiplier int, @asktablecode VARCHAR(50), @askrunid VARCHAR(50)
 DECLARE @JobID VARCHAR(50)
@@ -32,6 +32,7 @@ BEGIN
 	IF @partial=0 BEGIN
 		UPDATE ORIGINAL
 			SET ltramt=NULL
+				,lg = NULL
 				,ug1 = NULL
 				,ug2 = NULL
 				,ug3 = NULL
@@ -50,6 +51,7 @@ BEGIN
 	END ELSE BEGIN
 		UPDATE ORIGINAL
 			SET ltramt=NULL
+				,lg = NULL
 				,ug1 = NULL
 				,ug2 = NULL
 				,ug3 = NULL
