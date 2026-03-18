@@ -52,9 +52,9 @@ BEGIN
 		---------------------------------------------------------------------------------------------------------------
 		SELECT
 			@parent_ids = STRING_AGG(sub.parent_id, '-'),
-			@client_codes = MAX(sub.client_code),
+			@client_codes = COALESCE(MAX(sub.client_code),''),
 			@mailmnths = COALESCE(MAX(sub.mailmnth),''),
-			@mailpkg = MAX(sub.mailpkg)
+			@mailpkg = COALESCE(MAX(sub.mailpkg),'')
 		FROM (
 			SELECT DISTINCT TOP 10000 B.parent_id, B.client_code, B.mailmnth, B.mailpkg
 			FROM [dbo].[NCOA] A 
