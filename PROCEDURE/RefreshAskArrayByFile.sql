@@ -160,9 +160,16 @@ BEGIN
 	--      ,[misc7]
 	--		,giftdate
 		  --,CASE WHEN LEFT(rm,1)='U' THEN 999 ELSE datediff(month, CAST(giftdate AS DATE), @fb0_GridDate)-
-		  ,CASE WHEN giftdate IS NULL THEN NULL ELSE datediff(month, CAST(giftdate AS DATE), @fb0_GridDate)-
-				CASE WHEN DATEPART(day, CAST(giftdate AS DATE)) > DATEPART(day, @fb0_GridDate) THEN 1 ELSE 0 END 
-		  END recency
+		  --JCK:03.23.2026 - round month up to match Ralphie RM
+		  --,CASE WHEN giftdate IS NULL THEN NULL ELSE datediff(month, CAST(giftdate AS DATE), @fb0_GridDate)-
+				--CASE WHEN DATEPART(day, CAST(giftdate AS DATE)) > DATEPART(day, @fb0_GridDate) THEN 1 ELSE 0 END 
+		  --END recency
+		  ,CASE WHEN LEFT(rm,1)='U' OR giftdate IS NULL THEN 999 ELSE DATEDIFF(MONTH, CAST(giftdate AS DATE), @fb0_GridDate) +
+			CASE 
+				WHEN DAY(@fb0_GridDate) >= DAY(CAST(giftdate AS DATE)) THEN 1 
+				ELSE 0 
+			END 
+		  END AS recency
 		  --,CASE WHEN LEFT(rm,1)='U' THEN 0 
 		  ,CASE WHEN LEN(COALESCE(misc7,''))<2 THEN NULL
 			ELSE CASE WHEN @Vertical='Missions' AND CAST([last_giftamt] AS MONEY) > 0 AND SUBSTRING(misc7,2,1)='0' THEN 1 ELSE SUBSTRING(misc7,2,1) END
