@@ -9,7 +9,7 @@ DECLARE @testing BIT = 0
 
 --TESTING
 --DECLARE @parentID VARCHAR(100)
---SET @parentID = '132104'
+--SET @parentID = '158506'
 --DECLARE @outputFileName VARCHAR(MAX)
 --SET @outputFileName = '\\rkdc1-sqldev01\tempdata\QC FILES\OUTPUT FILES\LETTERSHOP\ClientCode\MWKWI\2025_Production_Files\ReadyToUpload\D_MWKWI_25-Dec_SFTS_131426_V2.csv'
 --SET @testing = 1
@@ -256,108 +256,54 @@ BEGIN
 		)
 	ORDER BY 91'
 
-	--	SELECT
-	--	client_code,
-	--	id,
-	--	CASE WHEN CHARINDEX('','',salutation)>0 THEN ''"'' + salutation + ''"'' ELSE salutation END,
-	--	CASE WHEN CHARINDEX('','',company)>0 THEN ''"'' + company + ''"'' ELSE company END,
-	--	CASE WHEN CHARINDEX('','',addressee1)>0 THEN ''"'' + addressee1 + ''"'' ELSE addressee1 END,
-	--	CASE WHEN CHARINDEX('','',addressee2)>0 THEN ''"'' + addressee2 + ''"'' ELSE addressee2 END,
-	--	CASE WHEN CHARINDEX('','',gender)>0 THEN ''"'' +  gender + ''"'' ELSE gender END,
-	--	CASE WHEN CHARINDEX('','',title)>0 THEN ''"'' + title + ''"'' ELSE title END,
-	--	CASE WHEN CHARINDEX('','',fname)>0 THEN ''"'' + fname + ''"'' ELSE fname END,
-	--	CASE WHEN CHARINDEX('','',middle)>0 THEN ''"'' + middle + ''"'' ELSE middle END,
-	--	CASE WHEN CHARINDEX('','',lname)>0 THEN ''"'' + lname + ''"'' ELSE lname END,
-	--	CASE WHEN CHARINDEX('','',suffix)>0 THEN ''"'' + suffix + ''"'' ELSE suffix END,
-	--	CASE WHEN CHARINDEX('','',email)>0 THEN ''"'' + email + ''"'' ELSE email END,
-	--	CASE WHEN CHARINDEX('','',phone)>0 THEN ''"'' + phone + ''"'' ELSE phone END,
-	--	CASE WHEN CHARINDEX('','',address1)>0 THEN ''"'' + address1 + ''"'' ELSE address1 END,
-	--	CASE WHEN CHARINDEX('','',address2)>0 THEN ''"'' +  address2 + ''"'' ELSE address2 END,
-	--	CASE WHEN CHARINDEX('','',city)>0 THEN ''"'' +  city + ''"'' ELSE city END,
-	--	CASE WHEN CHARINDEX('','',state)>0 THEN ''"'' +  state + ''"'' ELSE state END,
-	--	CASE WHEN CHARINDEX('','',zip)>0 THEN ''"'' +  zip + ''"'' ELSE zip END,
-	--	CASE WHEN CHARINDEX('','',dpv)>0 THEN ''"'' +  dpv + ''"'' ELSE dpv END,
-	--	giftdate,
-	--	giftamt,
-	--	i_giftdate,
-	--	totalamt,
-	--	memgifamt,
-	--	memgifdat,
-	--	CASE WHEN CHARINDEX('','',rm)>0 THEN ''"'' +  rm + ''"'' ELSE rm END,
-	--	CASE WHEN CHARINDEX('','',list)>0 THEN ''"'' +  list + ''"'' ELSE list END,
-	--	parent_id,
-	--	child_id,
-	--	CASE WHEN CHARINDEX('','',plsr_code)>0 THEN ''"'' +  plsr_code + ''"'' ELSE plsr_code END,
-	--	CASE WHEN CHARINDEX('','',clsr_code)>0 THEN ''"'' +  clsr_code + ''"'' ELSE clsr_code END,
-	--	CASE WHEN CHARINDEX('','',mailtype)>0 THEN ''"'' +  mailtype + ''"'' ELSE mailtype END,
-	--	CASE WHEN CHARINDEX('','',mailmnth)>0 THEN ''"'' +  mailmnth + ''"'' ELSE mailmnth END,
-	--	CASE WHEN CHARINDEX('','',mailpkg)>0 THEN ''"'' +  mailpkg + ''"'' ELSE mailpkg END,
-	--	ltramt,
-	--	ug1,
-	--	lg,
-	--	ug2,
-	--	ug3,
-	--	ug4,
-	--	ug5,
-	--	ug6,
-	--	m1,
-	--	mg,
-	--	m2,
-	--	m3,
-	--	m4,
-	--	m5,
-	--	m6,
-	--	CASE WHEN CHARINDEX('','',appeal1)>0 THEN ''"'' +  appeal1 + ''"'' ELSE appeal1 END,
-	--	CASE WHEN CHARINDEX('','',appeal2)>0 THEN ''"'' +  appeal2 + ''"'' ELSE appeal2 END,
-	--	CASE WHEN CHARINDEX('','',appeal3)>0 THEN ''"'' +  appeal3 + ''"'' ELSE appeal3 END,
-	--	CASE WHEN CHARINDEX('','',scanline1)>0 THEN ''"'' +  scanline1 + ''"'' ELSE scanline1 END,
-	--	CASE WHEN CHARINDEX('','',scanline2)>0 THEN ''"'' +  scanline2 + ''"'' ELSE scanline2 END,
-	--	CASE WHEN CHARINDEX('','',scanline3)>0 THEN ''"'' +  scanline3 + ''"'' ELSE scanline3 END,
-	--	bc2d1,
-	--	bc2d2,
-	--	bc2d3,
-	--	bc2d4,
-	--	bc2d5,
-	--	bc2d6,
-	--	bc3of9,
-	--	CASE WHEN CHARINDEX('','',misc1)>0 THEN ''"'' +  misc1 + ''"'' ELSE misc1 END,
-	--	CASE WHEN CHARINDEX('','',misc2)>0 THEN ''"'' +  misc2 + ''"'' ELSE misc2 END,
-	--	CASE WHEN CHARINDEX('','',misc3)>0 THEN ''"'' +  misc3 + ''"'' ELSE misc3 END,
-	--	CASE WHEN CHARINDEX('','',misc4)>0 THEN ''"'' +  misc4 + ''"'' ELSE misc4 END,
-	--	CASE WHEN CHARINDEX('','',misc5)>0 THEN ''"'' +  misc5 + ''"'' ELSE misc5 END,
-	--	CASE WHEN CHARINDEX('','',misc6)>0 THEN ''"'' +  misc6 + ''"'' ELSE misc6 END,
-	--	CASE WHEN CHARINDEX('','',misc7)>0 THEN ''"'' +  misc7 + ''"'' ELSE misc7 END,
-	--	CASE WHEN CHARINDEX('','',misc8)>0 THEN ''"'' +  misc8 + ''"'' ELSE misc8 END,
-	--	CASE WHEN CHARINDEX('','',misc9)>0 THEN ''"'' +  misc9 + ''"'' ELSE misc9 END,
-	--	CASE WHEN CHARINDEX('','',county)>0 THEN ''"'' +  county + ''"'' ELSE county END,
-	--	CASE WHEN CHARINDEX('','',stitle)>0 THEN ''"'' +  stitle + ''"'' ELSE stitle END,
-	--	CASE WHEN CHARINDEX('','',sfname)>0 THEN ''"'' +  sfname + ''"'' ELSE sfname END,
-	--	CASE WHEN CHARINDEX('','',smiddle)>0 THEN ''"'' +  smiddle + ''"'' ELSE smiddle END,
-	--	CASE WHEN CHARINDEX('','',slname)>0 THEN ''"'' +  slname + ''"'' ELSE slname END,
-	--	CASE WHEN CHARINDEX('','',ssuffix)>0 THEN ''"'' +  ssuffix + ''"'' ELSE ssuffix END,
-	--	CASE WHEN CHARINDEX('','',importid)>0 THEN ''"'' +  importid + ''"'' ELSE importid END,
-	--	CASE WHEN CHARINDEX('','',solcode1)>0 THEN ''"'' +  solcode1 + ''"'' ELSE solcode1 END,
-	--	CASE WHEN CHARINDEX('','',solcode2)>0 THEN ''"'' +  solcode2 + ''"'' ELSE solcode2 END,
-	--	CASE WHEN CHARINDEX('','',solcode3)>0 THEN ''"'' +  solcode3 + ''"'' ELSE solcode3 END,
-	--	CASE WHEN CHARINDEX('','',multi_flg)>0 THEN ''"'' +  multi_flg + ''"'' ELSE multi_flg END,
-	--	CASE WHEN CHARINDEX('','',endorsement)>0 THEN ''"'' +  endorsement + ''"'' ELSE endorsement END,
-	--	CASE WHEN CHARINDEX('','',ws)>0 THEN ''"'' +  ws + ''"'' ELSE ws END,
-	--	CASE WHEN CHARINDEX('','',cr_sequence)>0 THEN ''"'' +  cr_sequence + ''"'' ELSE cr_sequence END,
-	--	CASE WHEN CHARINDEX('','',cr_id)>0 THEN ''"'' +  cr_id + ''"'' ELSE cr_id END,
-	--	CASE WHEN CHARINDEX('','',income)>0 THEN ''"'' +  income + ''"'' ELSE income END,
-	--	CASE WHEN CHARINDEX('','',serial)>0 THEN ''"'' +  TRIM(REPLACE(REPLACE(serial, CHAR(13), ''''), CHAR(10), '''')) + ''"'' ELSE TRIM(REPLACE(REPLACE(serial, CHAR(13), ''''), CHAR(10), '''')) END,
-	--	CAST(qc_record AS VARCHAR(1)),
-	--	CAST(IsSeed AS VARCHAR(1))
-	--FROM dbo.ORIGINAL
-	--WHERE parent_id = @parentID
-	--ORDER BY 91
-
 	PRINT @sql
 	INSERT ##LettershopExportStaging
 	EXEC sp_executesql @sql, N'@parentID VARCHAR(100)', @parentID;
 
-	--SELECT  top 1 * FROM ##LettershopExportStaging
-	--where isseed='1'
+
+	--JCK:03.25.2026 - changes to output parent_id and child_id using new logic	
+	DECLARE @OPENQUERY nvarchar(4000), @TSQL nvarchar(4000), @LinkedServer nvarchar(4000)
+	DECLARE @JobID VARCHAR(18), @QuoteLineID VARCHAR(16), @DeliverableID INT
+
+	SET @LinkedServer = 'COMS_UATSB'
+	IF OBJECT_ID('tempdb..#tmpPkgPhases') IS NOT NULL
+		DROP TABLE #tmpPkgPhases
+
+	CREATE TABLE #tmpPkgPhases
+	(
+		Id VARCHAR(255),
+		Name VARCHAR(255),
+		Advantage_Job_Code__c VARCHAR(255),
+		QuoteId VARCHAR(255),
+		CPQ_Package__c NVARCHAR(MAX),
+		CPQ_Phase__c NVARCHAR(MAX),
+	)
+
+	SELECT @JobID=QuoteID FROM ProcessLog
+	WHERE Parent_ID=@parentID
+	SELECT @JobID
+	--STEP 2: Get all package-phase data
+	SET @OPENQUERY = 'SELECT *
+		FROM OPENQUERY('+ @LinkedServer + ','''
+	SET @TSQL = 'SELECT Id, Name, SBQQ__Quote__r.Advantage_Job_Code__c, SBQQ__Quote__c, CPQ_Package__c, CPQ_Phase__c
+		FROM SBQQ__QuoteLine__c WHERE SBQQ__Quote__c =''''' + @JobID + '''''  AND SB_Deliverable_Category__c=''''Deliverable'''' AND CPQ_Package__c != NULL ' + ' '')' 
+
+	PRINT @OPENQUERY+@TSQL
+	INSERT #tmpPkgPhases
+	EXEC (@OPENQUERY+@TSQL)
+	IF @testing=1 BEGIN
+		--PRINT '@QuoteLineID='+@QuoteLineID
+		SELECT * FROM #tmpPkgPhases
+	END
+
+	IF @testing=1 BEGIN
+		SELECT * FROM ##LettershopExportStaging
+	END
+	UPDATE A SET parent_id=B.Advantage_Job_Code__c+'_'+B.CPQ_Package__c
+		, child_id=CASE WHEN COALESCE(child_id,'')='' THEN NULL ELSE C.Advantage_Job_Code__c+'_'+C.CPQ_Package__c+'_'+C.CPQ_Phase__c  END
+	FROM ##LettershopExportStaging A 
+		JOIN #tmpPkgPhases B ON B.Name=[dbo].[udf_ConvertIDtoQuoteline](A.parent_id)
+		LEFT JOIN #tmpPkgPhases C ON C.Name=[dbo].[udf_ConvertIDtoQuoteline](COALESCE(A.child_id,''))
 
     -- Build and execute BCP command
 	IF @testing=1 BEGIN

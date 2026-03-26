@@ -1,5 +1,5 @@
 
-CREATE PROCEDURE [dbo].[GetSeedsByAdvJobNo]
+CREATE PROCEDURE [dbo].[GetSeedsByAdvJobNo_V5]
 (
 	@AdvJobNo VARCHAR(50),
 	@DelivrableId VARCHAR(50),
@@ -14,17 +14,17 @@ SET NOCOUNT ON;
 	
 --TESTING
 --DECLARE @AdvJobNo VARCHAR(50), @DelivrableId VARCHAR(50), @ResetSeeds BIT, @RefreshAskArray BIT = 0
---SET @AdvJobNo = '98885'
---SET @DelivrableId = '159092'	--50963 50957
+--SET @AdvJobNo = '98884'
+--SET @DelivrableId = '158945'	--50963 50957
 --SET @ResetSeeds = 1
---SET @testing = 1
+--SET @testing = 0
+
 
 DECLARE @FILE_ID VARCHAR(50)
 DECLARE @ACC_ID VARCHAR(50)
 
 DECLARE @CLIENT_CODE VARCHAR(50)
 DECLARE @VERTICAL VARCHAR(50)
-DECLARE @SQL NVARCHAR(MAX)
 
 SELECT @FILE_ID = A.FileID, @ACC_ID = A.AccountId, @CLIENT_CODE = A.Client_Code, @VERTICAL = A.Vertical 
 FROM dbo.FileLog A JOIN ProcessLog B ON B.FileID=A.FileID AND B.Parent_ID=@DelivrableId
@@ -38,34 +38,6 @@ IF @testing=1 BEGIN
 	PRINT @CLIENT_CODE
 	PRINT @VERTICAL
 END
-
---JCK:03.25.2026 - get the job type to filter on seed type
-IF OBJECT_ID('tempdb..#tmpJob') IS NOT NULL
-    DROP TABLE #tmpJob
-
-CREATE TABLE #tmpJob
-(
-	Id VARCHAR(255),
-	Advantage_Job_Code__c VARCHAR(255),
-	Job_Type__c VARCHAR(255),
-)
-
-DECLARE @OPENQUERY nvarchar(4000), @TSQL nvarchar(4000), @LinkedServer nvarchar(4000)
-DECLARE @JobType VARCHAR(255)
-SET @LinkedServer = 'COMS_UATSB'
-SET @OPENQUERY = 'SELECT *
-	FROM OPENQUERY('+ @LinkedServer + ','''
-SET @TSQL = 'SELECT Id, Advantage_Job_Code__c, 	Job_Type__c
-	FROM SBQQ__Quote__c WHERE 	Advantage_Job_Code__c=' + @AdvJobNo + ' '')' 
-
-PRINT @OPENQUERY+@TSQL
-INSERT #tmpJob
-EXEC (@OPENQUERY+@TSQL)
-IF @testing=1 BEGIN
-	SELECT * FROM #tmpJob
-END
-SELECT @JobType=Job_Type__c FROM #tmpJob
-PRINT @JobType
 
 IF @ResetSeeds=1 BEGIN
 	-- Ensure the SeedsSelection table exists
@@ -89,6 +61,8 @@ IF @ResetSeeds=1 BEGIN
 		);
 	END
 
+	DECLARE @SQL NVARCHAR(MAX)
+	DECLARE @OPENQUERY NVARCHAR(MAX), @TSQL NVARCHAR(MAX), @LinkedServer nvarchar(4000)
 
 	SET @LinkedServer = 'COMS_UATSB'
 
@@ -186,8 +160,6 @@ IF @ResetSeeds=1 BEGIN
 			FROM #SeedObj acr
 				JOIN (SELECT TOP 1 * FROM ORIGINAL WHERE FileID=@FILE_ID AND parent_id=@DelivrableId AND IsSeed=0 AND COALESCE(child_id,'')='' ORDER BY id) B ON B.FileID=@FILE_ID
 			--WHERE AccountId = @ACC_ID;
-			--JCK:03.25.2026 - added filtering seed type by job type
-			WHERE SB_Seed_Type__c LIKE CASE WHEN @JobType='Newsletter' THEN '%Newsletter%' ELSE '%Direct Mail%' END
 
 			SELECT o.id, @FILE_ID, o.Original_ID, Contact_type__c, acr.SB_Seed_Type__c, acr.SB_Seed_List__c, acr.SB_Replicate__c, MailingCountry, HasOptedOutOfEmail, 1
 			FROM dbo.ORIGINAL o
@@ -230,8 +202,6 @@ IF @ResetSeeds=1 BEGIN
 			FROM #SeedObj acr 
 				JOIN (SELECT TOP 1 * FROM ORIGINAL WHERE FileID=@FILE_ID AND parent_id=@DelivrableId AND IsSeed=0 AND COALESCE(child_id,'')='' ORDER BY id) B ON B.FileID=@FILE_ID
 			--WHERE AccountId = @ACC_ID;
-			--JCK:03.25.2026 - added filtering seed type by job type
-			WHERE SB_Seed_Type__c LIKE CASE WHEN @JobType='Newsletter' THEN '%Newsletter%' ELSE '%Direct Mail%' END
 
 			--JCK: 11:07.2025 - build scanline for new seeds (or any others with Scanline_Processed=0)
 			EXEC BuildScanline @FILE_ID, 1

@@ -30,14 +30,17 @@ BEGIN
 	DECLARE @creativeAbbreviated VARCHAR(MAX);
 	DECLARE @client_code VARCHAR(50);
 	DECLARE @parentID VARCHAR(50)
+	DECLARE @advantageJobNo VARCHAR(50)
+	DECLARE @packageCode VARCHAR(50)
 	DECLARE @outputFilename VARCHAR(500)
+
 	DECLARE @testing BIT = 0
 
 	--TESTING
 	--DECLARE @FileID INT, @outputPath VARCHAR(500)
-	--SET @outputPath = '\\rkdc1-sqldev01\tempdata\QC FILES\OUTPUT FILES\LETTERSHOP\ClientCode\SCMMI\2026_Production_Files\ReadyToUpload\'
+	--SET @outputPath = '\\Rkdc1-SQLDEV01\tempdata\QC FILES\OUTPUT FILES\LETTERSHOP\ClientCode\FBLCO\2026_Production_Files\ReadyToUpload\'
 	--SET @testing = 0
-	--SET @FileID = 72
+	--SET @FileID = 88
 
 	
 	--DECLARE @fileID VARCHAR(50);
@@ -60,18 +63,20 @@ BEGIN
 
 	DECLARE db_cursor CURSOR FOR 
 	--SELECT A.AudienceCode, B.Client_Code, A.Mail_Date,A.CreativeName, A.Parent_ID
-	SELECT COALESCE(A.AudienceCode,'D'), B.Client_Code, A.Mail_Date, A.CreativeAbbreviated, A.Parent_ID
+	SELECT COALESCE(A.AudienceCode,'D'), B.Client_Code, A.Mail_Date, A.CreativeAbbreviated, A.Parent_ID, B.Advantage_Job_ID, A.Package_Code
 	FROM dbo.ProcessLog A 
 		JOIN FileLog B ON B.FileID=A.FileID AND B.Advantage_Job_ID=(SELECT Advantage_Job_ID FROM FileLog WHERE FileID=@FileID)
 	WHERE A.Is_Acquisition=@is_acquisition
 
 	OPEN db_cursor  
-	FETCH NEXT FROM db_cursor INTO @audience_code, @client_code, @mail_date, @creativecode, @parentID
+	FETCH NEXT FROM db_cursor INTO @audience_code, @client_code, @mail_date, @creativecode, @parentID, @advantageJobNo, @packageCode
 
 	WHILE @@FETCH_STATUS = 0  
 	BEGIN
 		PRINT @mail_date
-		SET @outputFilename = @outputPath+@audience_code+'_'+@client_code+'_'+SUBSTRING(CAST(@mail_date AS VARCHAR(10)),3,2)+'-'+FORMAT(@mail_date, 'MMM')+'_'+COALESCE(@creativecode,'')+'_'+@parentID+'.csv'
+		--JCK:03.25.2026 - changes to naming convention
+		--SET @outputFilename = @outputPath+@audience_code+'_'+@client_code+'_'+SUBSTRING(CAST(@mail_date AS VARCHAR(10)),3,2)+'-'+FORMAT(@mail_date, 'MMM')+'_'+COALESCE(@creativecode,'')+'_'+@parentID+'.csv'
+		SET @outputFilename = @outputPath+@audience_code+'_'+@client_code+'_'+SUBSTRING(CAST(@mail_date AS VARCHAR(10)),3,2)+'-'+FORMAT(@mail_date, 'MMM')+'_'+COALESCE(@creativecode,'')+'_'+@advantageJobNo+'_'+@packageCode+'.csv'
 		PRINT @parentID
 		PRINT @outputFilename
 
