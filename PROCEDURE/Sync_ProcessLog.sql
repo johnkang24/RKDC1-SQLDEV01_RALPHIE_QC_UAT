@@ -182,14 +182,14 @@ FROM
 		MAX(CASE WHEN B.CPQ_Phase__c=A.CPQ_Phase__c THEN A.SBQQ__ProductName__c ELSE NULL END) SBQQ__ProductName__c, 
 		MAX(CASE WHEN B.CPQ_Phase__c=A.CPQ_Phase__c THEN A.SB_Ask_Array_Code__c ELSE NULL END) SB_Ask_Array_Code__c, 
 		MAX(CASE WHEN B.CPQ_Phase__c=A.CPQ_Phase__c THEN A.SB_DM_Multiplier__c ELSE NULL END) SB_DM_Multiplier__c,
-		MAX(CASE WHEN B.CPQ_Phase__c=A.CPQ_Phase__c THEN B.CPQ_Phase__c ELSE NULL END) SB_RKD_Audience_Code__c, 
+		MAX(CASE WHEN B.CPQ_Phase__c=A.CPQ_Phase__c THEN B.SB_RKD_Audience_Code__c ELSE NULL END) SB_RKD_Audience_Code__c, 
 		MAX(CASE WHEN B.CPQ_Phase__c=A.CPQ_Phase__c THEN A.SB_RKD_Audience__c ELSE NULL END) SB_RKD_Audience__c, 
 		MAX(CASE WHEN B.CPQ_Phase__c=A.CPQ_Phase__c THEN A.SB_Creative_Name ELSE NULL END) SB_Creative_Name, 
 		MAX(CASE WHEN B.CPQ_Phase__c=A.CPQ_Phase__c THEN A.SB_Creative_Code__c ELSE NULL END) SB_Creative_Code__c, 
 		MAX(CASE WHEN B.CPQ_Phase__c=A.CPQ_Phase__c THEN A.SB_Abbreviation__c ELSE NULL END) SB_Abbreviation__c, 
 		SUM(COALESCE(CPQ_Estimated_Quantity__c,0)) PackageQty, SUM(COALESCE(SB_DM_Prelim_Quantity__c,0)) PrelimQty
 		FROM #tmpPkgPhases A JOIN (
-			SELECT A.Id, A.Name, A.CPQ_Package__c, B.CPQ_Phase__c, A.SBQQ__Description__c
+			SELECT A.Id, A.Name, A.CPQ_Package__c, B.CPQ_Phase__c, A.SBQQ__Description__c, SB_RKD_Audience_Code__c
 			FROM #tmpPkgPhases A JOIN (SELECT CPQ_Package__c, MIN(CPQ_Phase__c) CPQ_Phase__c FROM #tmpPkgPhases GROUP BY CPQ_Package__c
 			) B ON B.CPQ_Package__c=A.CPQ_Package__c AND B.CPQ_Phase__c=A.CPQ_Phase__c) B ON B.CPQ_Package__c=A.CPQ_Package__c --AND B.CPQ_Phase__c=A.CPQ_Phase__c
 		WHERE NOT (A.SB_RKD_Audience__c='Ship to Client' AND COALESCE(A.SB_DM_Data_Selection_Criteria__c,'')='')	--remove phases that doesn't need to be QC'd
