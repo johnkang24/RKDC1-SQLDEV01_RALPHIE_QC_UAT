@@ -185,14 +185,6 @@ BEGIN
 			city VARCHAR(100),
 			state VARCHAR(50),
 			zip VARCHAR(20),
-			mv_forward VARCHAR(100),
-			mv_effdate VARCHAR(100),
-			recommendation VARCHAR(100),
-			new_address_1 VARCHAR(200),
-			new_address_2 VARCHAR(200),
-			new_city VARCHAR(100),
-			new_state VARCHAR(500),
-			new_zip VARCHAR(200),
 			error_code VARCHAR(200),
 			error_description VARCHAR(255)
 		);';
@@ -202,7 +194,7 @@ BEGIN
 		SET @sql = '
 		INSERT INTO [' + @dbName + '].dbo.NCOADropExportStaging
 		SELECT 
-		''client_id'', ''donor_id'', ''company'', ''addressee1'', ''addressee2'', ''address1'', ''address2'', ''city'', ''state'', ''zip'', ''mv_forward'', ''mv_effdate'', ''recommendation'', ''new_address_1'', ''new_address_2'', ''new_city'',	''new_state'', ''new_zip'', ''error_code'', ''error_description'';
+		''client_id'', ''donor_id'', ''company'', ''addressee1'', ''addressee2'', ''address1'', ''address2'', ''city'', ''state'', ''zip'', ''error_code'', ''error_description'';
 		';
 		EXEC sp_executesql @sql;
 
@@ -213,9 +205,9 @@ BEGIN
 		--STEP 3: add fetched data to first temp table
 		SET @sql = @sql + '
 		INSERT INTO [' + @dbName + '].dbo.NCOADropExportStaging (
-		client_id, donor_id, company, addressee1, addressee2, address1, address2, city, state, zip, mv_forward, mv_effdate, recommendation, new_address_1, new_address_2, new_city,	new_state, new_zip, error_code, error_description
+		client_id, donor_id, company, addressee1, addressee2, address1, address2, city, state, zip, error_code, error_description
 		)
-		SELECT client_id, donor_id, company, addressee1, addressee2, address1, address2, city, state, zip, mv_forward, mv_effdate, recommendation, new_address_1, new_address_2, new_city,	new_state, new_zip, error_code, error_description
+		SELECT client_id, donor_id, company, addressee1, addressee2, address1, address2, city, state, zip, error_code, error_description
 		FROM #ncoa_errors;';
 		print @sql
 		EXEC sp_executesql @sql;
