@@ -6,7 +6,7 @@ CREATE PROCEDURE [dbo].[GenerateLettershopFile]
 )
 AS
 
---BEGIN
+BEGIN
 
 	SET NOCOUNT ON;
 	
@@ -134,5 +134,5 @@ AS
 
 	CLOSE db_cursor  
 	DEALLOCATE db_cursor
---END
+END
 

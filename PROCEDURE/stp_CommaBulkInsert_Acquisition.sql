@@ -198,7 +198,7 @@ BEGIN
 
 	----copy data into respective table
 	IF @table='NCOA' BEGIN
-		SET @SQL = @SQL + 'INSERT INTO ' + @table + ' SELECT ' + CONVERT(VARCHAR(100),@FileID) + ' FileID, '  + CONVERT(VARCHAR(100),@ParentFileID) + ' ParentFileID, 
+		SET @SQL = 'INSERT INTO ' + @table + ' SELECT ' + CONVERT(VARCHAR(100),@FileID) + ' FileID, '  + CONVERT(VARCHAR(100),@ParentFileID) + ' ParentFileID, 
 			FROM ##BulkInsert'
 	END ELSE BEGIN
 		SET @table = 'ORIGINAL'
@@ -217,7 +217,7 @@ BEGIN
 		--		AND FileID<>@FileID
 		END
 		
-		SET @SQL = @SQL + 'INSERT INTO ' + @table + '(FileID,
+		SET @SQL = 'INSERT INTO ' + @table + '(FileID,
 				Client_Code,ID,salutation,Company,Addressee1,Addressee2,Gender,title,fname,MIDDLE,lname,suffix,EMAIL,PHONE,Address1,address2,City,State,Zip,DPV,GiftDate,GiftAmt,I_GiftDate,
 				TotalAmt,MemGifAmt,MemGifDat,RM,LIST,Parent_ID,Child_ID,PLSR_Code,CLSR_Code,MAILTYPE,MAILMNTH,MAILPKG,LTRAMT,UG1,LG,UG2,UG3,UG4,UG5,UG6,M1,MG,M2,M3,M4,M5,M6,
 				APPEAL1,APPEAL2,APPEAL3,SCANLINE1,SCANLINE2,SCANLINE3,BC2D1,BC2D2,BC2D3,BC2D4,BC2D5,BC2D6,BC3OF9,MISC1,MISC2,MISC3,MISC4,MISC5,MISC6,MISC7,MISC8,MISC9,
