@@ -11,7 +11,7 @@ DECLARE @DeliverableID INT
 DECLARE @testing BIT = 0
 
 --DECLARE @FileID INT
---SET @FileID = 58
+--SET @FileID = 154
 --SET @testing = 1
 
 SELECT TOP 1 @DeliverableID=parent_id
@@ -153,7 +153,7 @@ END
 IF OBJECT_ID('tempdb..#tmpPkgTotal') IS NOT NULL
 	DROP TABLE #tmpPkgTotal
 
-SELECT COALESCE(C.FileID,0) FileID, A.*, COALESCE(B2.TotalSelected,P.Delivered_Qty,0) TotalSelected, COALESCE(B.TotalDupDrops,P.Dups_Drop,0) TotalDupDrops, COALESCE(B.TotalNCOADrops,P.NCOA_Drop,0) TotalNCOADrops
+SELECT COALESCE(C.FileID,@FileID) FileID, A.*, COALESCE(B2.TotalSelected,P.Delivered_Qty,0) TotalSelected, COALESCE(B.TotalDupDrops,P.Dups_Drop,0) TotalDupDrops, COALESCE(B.TotalNCOADrops,P.NCOA_Drop,0) TotalNCOADrops
 INTO #tmpPkgTotal
 FROM 
 	--JCK:02.10.2026 - need to collect all child data selection criterias

@@ -1,4 +1,4 @@
-CREATE PROCEDURE [dbo].[GetParentDeliverablesByLoadFile]
+CREATE PROCEDURE [dbo].[GetParentDeliverablesByLoadFile_V1]
 (
 	@SourceLoadFile VARCHAR(255)
 )
@@ -8,13 +8,12 @@ AS
 SET NOCOUNT ON
 --TESTING
 --DECLARE @SourceLoadFile VARCHAR(255)
---SET @SourceLoadFile = '\\Rkdc1-SQLDEV01\tempdata\RALPHIE\staging\FoodBank\2604\SEVVAMULTITEST\Output\SEVVAMULTITEST_COMS_ORIGINAL.CSV'
+--SET @SourceLoadFile = 'LASPCNOV25_POSORIGINAL.CSV'
 
 DECLARE @FileID INT
 
 SELECT @FileID=MAX(FileID) FROM FileLog
 WHERE [FileNamePath] LIKE '%'+@SourceLoadFile+'%'
-	AND FileLoaded=1
 
 PRINT @FileID
 IF @FileID > 0 BEGIN
@@ -22,10 +21,7 @@ IF @FileID > 0 BEGIN
 	FROM ORIGINAL A 
 		JOIN FileLog B ON B.FileID=A.FileID
 		JOIN ProcessLog C ON C.Parent_ID=A.Parent_ID
-	--WHERE A.FileID=@FileID
-	WHERE A.FileID IN (SELECT FileID FROM FileLog
-		WHERE [FileNamePath] LIKE '%'+@SourceLoadFile+'%'
-			AND FileLoaded=1)
+	WHERE A.FileID=@FileID
 	GROUP BY B.Vertical, B.Client_Code, C.ProcessLog_Id, B.Advantage_Job_ID, C.Mail_Date, A.FileId, A.parent_id
 	ORDER BY A.FileId, A.parent_id
 END
