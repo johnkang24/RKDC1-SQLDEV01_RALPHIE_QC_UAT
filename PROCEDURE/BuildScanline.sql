@@ -26,6 +26,10 @@ SET @errMesage = ''
 SET @LinkedServer = 'COMS_UATSB'
 SET @default_scanline = 'cc(full)-sp(2)-id(full)-sp(2)-ac(full)-sp(2)-rm(2)'
 
+--JCK:04.04.2026 reset scanline error prior to running
+UPDATE ProcessLog SET Scanline_Error=NULL
+WHERE FileID=@FileID
+
 -------------------------------------------------------------------------------------
 ----STEP 1: check if data exists and if so make a backup
 -------------------------------------------------------------------------------------
@@ -273,7 +277,7 @@ END
 -----------------------------------------------------------------------------------
 IF EXISTS(SELECT SB_Category__c, SB_Type__c, SB_Field_Content__c, SB_Position_Length__c, SB_Default_Text__c, SB_Sequence__c, SourceName, Abbreviation, SourceEnvironment, SourceObject, SourceField
 	FROM #tmpScanlineDefinition A JOIN [dbo].[Scanline_Mapping] B ON B.SourceName=A.SB_Field_Content__c
-	WHERE B.SourceField = 'Scanline_Text_1' AND SB_Default_Text__c='') AND EXISTS(SELECT * FROM #tmpInstructions WHERE COALESCE(Scanline_Text_1,'')='') BEGIN
+	WHERE B.SourceField = 'Scanline_Text_1' AND COALESCE(SB_Default_Text__c,'')='') AND EXISTS(SELECT * FROM #tmpInstructions WHERE COALESCE(Scanline_Text_1,'')='') BEGIN
 	UPDATE A SET Scanline_Error='Scanline not set due to missing scanline text 1'
 	FROM ProcessLog A JOIN #tmpInstructions B ON B.Deliverable_Element__c=A.QuoteLine_ID 
 		AND COALESCE(Scanline_Text_1,'')=''
@@ -282,7 +286,7 @@ IF EXISTS(SELECT SB_Category__c, SB_Type__c, SB_Field_Content__c, SB_Position_Le
 END
 IF EXISTS(SELECT SB_Category__c, SB_Type__c, SB_Field_Content__c, SB_Position_Length__c, SB_Default_Text__c, SB_Sequence__c, SourceName, Abbreviation, SourceEnvironment, SourceObject, SourceField
 	FROM #tmpScanlineDefinition A JOIN [dbo].[Scanline_Mapping] B ON B.SourceName=A.SB_Field_Content__c
-	WHERE B.SourceField = 'Scanline_Text_2' AND SB_Default_Text__c='') AND EXISTS(SELECT * FROM #tmpInstructions WHERE COALESCE(Scanline_Text_2,'')='') BEGIN
+	WHERE B.SourceField = 'Scanline_Text_2' AND COALESCE(SB_Default_Text__c,'')='') AND EXISTS(SELECT * FROM #tmpInstructions WHERE COALESCE(Scanline_Text_2,'')='') BEGIN
 	UPDATE A SET Scanline_Error='Scanline not set due to missing scanline text 2'
 	FROM ProcessLog A JOIN #tmpInstructions B ON B.Deliverable_Element__c=A.QuoteLine_ID 
 		AND COALESCE(Scanline_Text_2,'')=''
