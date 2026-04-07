@@ -1,5 +1,5 @@
 
-CREATE PROCEDURE [dbo].[GetSeedsByAdvJobNo]
+CREATE PROCEDURE [dbo].[GetSeedsByAdvJobNo_V6]
 (
 	@AdvJobNo VARCHAR(50),
 	@DelivrableId VARCHAR(50),
@@ -14,10 +14,10 @@ SET NOCOUNT ON;
 	
 --TESTING
 --DECLARE @AdvJobNo VARCHAR(50), @DelivrableId VARCHAR(50), @ResetSeeds BIT, @RefreshAskArray BIT = 0
---SET @AdvJobNo = '98890'
---SET @DelivrableId = '159137'	--50963 50957
+--SET @AdvJobNo = '98885'
+--SET @DelivrableId = '159092'	--50963 50957
 --SET @ResetSeeds = 1
---SET @testing = 0
+--SET @testing = 1
 
 DECLARE @FILE_ID VARCHAR(50)
 DECLARE @ACC_ID VARCHAR(50)
@@ -99,39 +99,32 @@ IF @ResetSeeds=1 BEGIN
 		IF OBJECT_ID('tempdb..#SeedObj') IS NOT NULL DROP TABLE #SeedObj;
 
 		CREATE TABLE #SeedObj (
-			Id NVARCHAR(MAX),
-			SB_Contact__c NVARCHAR(MAX),
-			SB_Account__c NVARCHAR(MAX),
+			Id NVARCHAR(255),
+			SB_Contact__c NVARCHAR(50),
+			SB_Account__c NVARCHAR(50),
 			SB_Seed_Type__c NVARCHAR(MAX),
-			SB_Donor_Id__c NVARCHAR(MAX),
-			SB_Replicate__c NVARCHAR(MAX),
-			SB_Seed_List__c NVARCHAR(MAX),
-			SB_Salutation__c NVARCHAR(MAX),
-			SB_First_Pseudonym__c NVARCHAR(MAX),
-			SB_Last_Pseudonym__c NVARCHAR(MAX),
+			SB_Donor_Id__c NVARCHAR(100),
+			SB_Replicate__c NVARCHAR(10),
+			SB_Seed_List__c NVARCHAR(100),
+			SB_Salutation__c NVARCHAR(100),
+			SB_First_Pseudonym__c NVARCHAR(100),
+			SB_Last_Pseudonym__c NVARCHAR(100),
 			SB_RM_Code__c NVARCHAR(100),
-			--JCK:04.06.2026 getting new address fields from seed record itself
-			SB_Vertical__c NVARCHAR(MAX),
-			SB_Address_Line_1__c NVARCHAR(MAX),
-			SB_Address_Line_2__c NVARCHAR(MAX),	
-			SB_City__c NVARCHAR(MAX),
-			SB_State__c NVARCHAR(MAX),
-			SB_Zip__c NVARCHAR(MAX),
-			FirstName NVARCHAR(MAX),
-			MiddleName NVARCHAR(MAX),
-			LastName NVARCHAR(MAX),
-			Suffix NVARCHAR(MAX),
-			Title NVARCHAR(MAX),
-			Email NVARCHAR(MAX),
+			FirstName NVARCHAR(100),
+			MiddleName NVARCHAR(100),
+			LastName NVARCHAR(100),
+			Suffix NVARCHAR(20),
+			Title NVARCHAR(100),
+			Email NVARCHAR(255),
 			HasOptedOutOfEmail BIT,
-			Phone NVARCHAR(MAX),
-			MailingStreet NVARCHAR(MAX),
-			MailingCity NVARCHAR(MAX),
-			MailingState NVARCHAR(MAX),
-			MailingPostalCode NVARCHAR(MAX),
-			MailingCountry NVARCHAR(MAX),
-			Contact_type__c NVARCHAR(MAX),
-			Serial NVARCHAR(MAX),
+			Phone NVARCHAR(50),
+			MailingStreet NVARCHAR(255),
+			MailingCity NVARCHAR(100),
+			MailingState NVARCHAR(100),
+			MailingPostalCode NVARCHAR(20),
+			MailingCountry NVARCHAR(100),
+			Contact_type__c NVARCHAR(100),
+			Serial NVARCHAR(100),
 		);
 
 		--JCK:03.09.2026 added SB_Contact__r.Is_Inactive__c=false to filter out inactive contacts too
@@ -139,18 +132,17 @@ IF @ResetSeeds=1 BEGIN
 			SELECT *, NULL Serial
 			FROM OPENQUERY([' + @LinkedServer + '], 
 				''SELECT Id, SB_Contact__c, SB_Account__c, SB_Seed_Type__c, SB_Donor_Id__c, SB_Replicate__c, SB_Seed_List__c, SB_Salutation__c, SB_First_Pseudonym__c, SB_Last_Pseudonym__c, SB_RM_Code__c,
-				SB_Vertical__c, SB_Address_Line_1__c, SB_Address_Line_2__c, SB_City__c, SB_State__c, SB_Zip__c,
 				SB_Contact__r.FirstName, SB_Contact__r.MiddleName, SB_Contact__r.LastName, SB_Contact__r.Suffix, SB_Contact__r.Title, SB_Contact__r.Email, 
 				SB_Contact__r.HasOptedOutOfEmail, SB_Contact__r.Phone, SB_Contact__r.MailingStreet, SB_Contact__r.MailingCity, SB_Contact__r.MailingState, SB_Contact__r.MailingPostalCode, SB_Contact__r.MailingCountry, SB_Contact__r.Contact_type__c 
 				FROM Seed__c
 				WHERE SB_Active__c = true AND SB_Contact__r.Is_Inactive__c=false AND (SB_VERTICAL__c = ''''' + REPLACE(@VERTICAL, '''', '''''') + ''''' OR SB_Account__c = ''''' + REPLACE(@ACC_ID, '''', '''''') + ''''')'')';
 
 
+		INSERT INTO #SeedObj EXEC(@SQL);
 		IF @testing=1 BEGIN
 			PRINT @SQL
 			SELECT * FROM #SeedObj
 		END
-		INSERT INTO #SeedObj EXEC(@SQL);
 
 		DECLARE @appeal1 AS VARCHAR(50)
 		SELECT TOP 1 @appeal1=appeal1 FROM ORIGINAL
@@ -187,20 +179,12 @@ IF @ResetSeeds=1 BEGIN
 				--	ELSE acr.SB_Last_Pseudonym__c 
 				--END,
 				LastName,
-				acr.Suffix, acr.Email, acr.Phone
-					--, MailingStreet, NULL, MailingCity, MailingState, MailingPostalCode
-					, CASE WHEN COALESCE(SB_Contact__c,'')='' THEN SB_Address_Line_1__c ELSE  MailingStreet END [address1]
-					, CASE WHEN COALESCE(SB_Contact__c,'')='' THEN SB_Address_Line_2__c ELSE NULL END [address2]
-					, CASE WHEN COALESCE(SB_Contact__c,'')='' THEN SB_City__c ELSE MailingCity END [city]
-					, CASE WHEN COALESCE(SB_Contact__c,'')='' THEN SB_State__c ELSE MailingState END [state]
-					, CASE WHEN COALESCE(SB_Contact__c,'')='' THEN SB_Zip__c ELSE MailingPostalCode END [zip]
-					, NULL, NULL, NULL, NULL, NULL, NULL, COALESCE(acr.SB_RM_Code__c,'UU'), NULL, @DelivrableId, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, @appeal1, NULL, NULL
+				acr.Suffix, acr.Email, acr.Phone, MailingStreet, NULL, MailingCity, MailingState, MailingPostalCode, NULL, NULL, NULL, NULL, NULL, NULL, COALESCE(acr.SB_RM_Code__c,'UU'), NULL, @DelivrableId, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, @appeal1, NULL, NULL
 					, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL	--scanline, bc2d1, bc3of9
 					, B.misc1, B.misc2, B.misc3, B.misc4, B.misc5, B.misc6, B.misc7, B.misc8, B.misc9	--misc1-9
 					, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, acr.Serial, 1
 			FROM #SeedObj acr
 				JOIN (SELECT TOP 1 * FROM ORIGINAL WHERE FileID=@FILE_ID AND parent_id=@DelivrableId AND IsSeed=0 AND COALESCE(child_id,'')='' ORDER BY id) B ON B.FileID=@FILE_ID
-				CROSS JOIN (SELECT id, SB_Replicate__c FROM #SeedObj) X
 			--WHERE AccountId = @ACC_ID;
 			--JCK:03.25.2026 - added filtering seed type by job type
 			WHERE SB_Seed_Type__c LIKE CASE WHEN @JobType='Newsletter' THEN '%Newsletter%' ELSE '%Direct Mail%' END
@@ -214,49 +198,40 @@ IF @ResetSeeds=1 BEGIN
 			-- remove existing seeds
 			DELETE ORIGINAL WHERE FileID=@FILE_ID AND Parent_ID=@DelivrableId AND IsSeed=1
 
-			--JCK:04.06.2026 update to apply SB_Replicate__c when adding seeds 
-			;
-			WITH Numbers AS (
-				SELECT ROW_NUMBER() OVER (ORDER BY (SELECT NULL)) AS n
-				FROM sys.objects
-			)
-				-- Insert into dbo.ORIGINAL table
-				INSERT INTO dbo.ORIGINAL(
-					[FileID], [client_code], [id], [salutation], [addressee1], [addressee2]
-					, [fname], [middle], [lname], [suffix], [email], [phone]
-					, [address1], [address2], [city], [state], [zip]
-					, [rm], [parent_id], [appeal1]
+			-- Insert into dbo.ORIGINAL table
+			INSERT INTO dbo.ORIGINAL(
+				[FileID], [client_code], [id], [salutation], [company], [addressee1], [addressee2], [gender], [title], [fname], [middle], [lname], [suffix], [email], [phone], [address1], [address2], [city], [state], [zip], [giftdate], [giftamt], [i_giftdate], [totalamt], [memgifamt], [memgifdat], [rm], [list], [parent_id], [child_id], [PLSR_Code], [CLSR_Code], [mailtype], [mailmnth], [mailpkg], [ltramt], [ug1], [lg], [ug2], [ug3], [ug4], [m1], [mg], [m2], [m3], [m4], [appeal1], [appeal2], [appeal3]
+					, [scanline1], [scanline2], [scanline3], [bc2d1], [bc2d2], [bc2d3], [bc2d4], [bc2d5], [bc2d6], [bc3of9]
 					, [misc1], [misc2], [misc3], [misc4], [misc5], [misc6], [misc7], [misc8], [misc9]
-					, [serial], [IsSeed]
-				)
-				SELECT FileID, client_code, SB_Donor_Id__c, SB_Salutation__c, SB_First_Pseudonym__c, SB_Last_Pseudonym__c
-					,FirstName, middle, LastName, Suffix, Email, Phone
-					,address_1, address_2, city, [state], zip
-					,rm, parent_id, appeal1
-					,misc1, misc2, misc3, misc4, misc5, misc6, misc7, misc8, misc9
-					,serial, IsSeed
-				FROM (
-					SELECT
-						@FILE_ID FileID, @CLIENT_CODE client_code, acr.SB_Donor_Id__c, acr.SB_Salutation__c, acr.SB_First_Pseudonym__c, acr.SB_Last_Pseudonym__c, 
-						FirstName, MiddleName as middle, LastName, acr.Suffix, acr.Email, acr.Phone
-						--JCK:04.06.2026 get directly from seed record if no contact specified
-						, CASE WHEN COALESCE(SB_Contact__c,'')='' THEN SB_Address_Line_1__c ELSE  MailingStreet END address_1
-						, CASE WHEN COALESCE(SB_Contact__c,'')='' THEN SB_Address_Line_2__c ELSE NULL END address_2
-						, CASE WHEN COALESCE(SB_Contact__c,'')='' THEN SB_City__c ELSE MailingCity END city
-						, CASE WHEN COALESCE(SB_Contact__c,'')='' THEN SB_State__c ELSE MailingState END [state]
-						, CASE WHEN COALESCE(SB_Contact__c,'')='' THEN SB_Zip__c ELSE MailingPostalCode END zip
-						, COALESCE(acr.SB_RM_Code__c,'UU') rm, @DelivrableId parent_id, @appeal1 appeal1
-						, B.misc1, B.misc2, B.misc3, B.misc4, B.misc5, B.misc6, B.misc7, B.misc8, B.misc9	--misc1-9
-						, 'S_'+CAST(@max_serial+ROW_NUMBER() OVER (ORDER BY acr.SB_Donor_Id__c) AS VARCHAR(1000))+'_'+@DelivrableId Serial, 1 IsSeed
-						, SB_Replicate__c+1 SB_Replicate__c
-					FROM #SeedObj acr 
-						JOIN (SELECT TOP 1 * FROM ORIGINAL WHERE FileID=@FILE_ID AND parent_id=@DelivrableId AND IsSeed=0 AND COALESCE(child_id,'')='' ORDER BY id) B ON B.FileID=@FILE_ID
-					--WHERE AccountId = @ACC_ID;
-					--JCK:03.25.2026 - added filtering seed type by job type
-					WHERE SB_Seed_Type__c LIKE CASE WHEN @JobType='Newsletter' THEN '%Newsletter%' ELSE '%Direct Mail%' END
-			) q
-			JOIN Numbers n
-				ON n.n <= q.SB_Replicate__c;
+					, [county], [stitle], [sfname], [smiddle], [slname], [ssuffix], [importid], [solcode1], [solcode2], [solcode3], [multi_flg], [filetype], [endorsement], [ws], [cr_sequence], [cr_id], [income], [dupedrop], [serial], [IsSeed]
+			)
+			SELECT
+				--JCK:02.25.2026
+				--@FILE_ID, @CLIENT_CODE, acr.SB_Donor_Id__c, Salutation, NULL, COALESCE(Salutation,'')+' '+LastName, NULL, NULL, NULL, 
+				@FILE_ID, @CLIENT_CODE, acr.SB_Donor_Id__c, acr.SB_Salutation__c, NULL, acr.SB_First_Pseudonym__c, acr.SB_Last_Pseudonym__c, NULL, NULL, 
+					--CASE 
+					--	WHEN acr.SB_First_Pseudonym__c IS NULL OR LTRIM(RTRIM(acr.SB_First_Pseudonym__c)) = '' 
+					--		THEN FirstName 
+					--	ELSE acr.SB_First_Pseudonym__c 
+					--END,
+					FirstName,
+				MiddleName as middle,
+				--CASE 
+				--	WHEN acr.SB_Last_Pseudonym__c IS NULL OR LTRIM(RTRIM(acr.SB_Last_Pseudonym__c)) = '' 
+				--		THEN LastName 
+				--	ELSE acr.SB_Last_Pseudonym__c 
+				--END,
+				LastName,
+				acr.Suffix, acr.Email, acr.Phone, MailingStreet, NULL, MailingCity, MailingState, MailingPostalCode, NULL, NULL, NULL, NULL, NULL, NULL, COALESCE(acr.SB_RM_Code__c,'UU'), NULL, @DelivrableId, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, @appeal1, NULL, NULL
+					--, NULL,	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'S_'+CAST(@max_serial+ROW_NUMBER() OVER (ORDER BY acr.SB_Donor_Id__c) AS VARCHAR(1000))+'_'+@DelivrableId, 1
+					, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL	--scanline, bc2d1, bc3of9
+					, B.misc1, B.misc2, B.misc3, B.misc4, B.misc5, B.misc6, B.misc7, B.misc8, B.misc9	--misc1-9
+					, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'S_'+CAST(@max_serial+ROW_NUMBER() OVER (ORDER BY acr.SB_Donor_Id__c) AS VARCHAR(1000))+'_'+@DelivrableId, 1
+			FROM #SeedObj acr 
+				JOIN (SELECT TOP 1 * FROM ORIGINAL WHERE FileID=@FILE_ID AND parent_id=@DelivrableId AND IsSeed=0 AND COALESCE(child_id,'')='' ORDER BY id) B ON B.FileID=@FILE_ID
+			--WHERE AccountId = @ACC_ID;
+			--JCK:03.25.2026 - added filtering seed type by job type
+			WHERE SB_Seed_Type__c LIKE CASE WHEN @JobType='Newsletter' THEN '%Newsletter%' ELSE '%Direct Mail%' END
 
 			--JCK: 11:07.2025 - build scanline for new seeds (or any others with Scanline_Processed=0)
 			EXEC BuildScanline @FILE_ID, 1
@@ -274,7 +249,7 @@ IF @ResetSeeds=1 BEGIN
 				JOIN #SeedObj acr ON o.serial = acr.Serial
 				WHERE o.FileID = @FILE_ID AND o.parent_id = @DelivrableId AND o.IsSeed = 1;
 
-			--DROP TABLE #SeedObj;
+			DROP TABLE #SeedObj;
 			-- DROP TABLE dbo.SeedsSelection;
 
 			--09.18.2025 --update new field
@@ -305,5 +280,3 @@ END ELSE BEGIN
 	--AND o.child_id = @DelivrableId 
 	AND o.IsSeed = 1;
 END
-
-
